@@ -1,0 +1,544 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Kinematics Trace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#eef2ef;
+    --grid:rgba(23,34,43,.07);
+    --grid-strong:rgba(23,34,43,.15);
+    --ink:#17222b;
+    --ink-dim:#51626c;
+    --paper:#fbfdfc;
+    --paper-border:rgba(23,34,43,.14);
+    --accent:#d65f2c;
+    --accent-strong:#b84e22;
+    --on-accent:#fff9f5;
+    --good:#2f7d5a;
+    --good-bg:rgba(47,125,90,.12);
+    --bad:#c1304a;
+    --bad-bg:rgba(193,48,74,.12);
+    --shadow:0 1px 2px rgba(23,34,43,.07), 0 10px 28px rgba(23,34,43,.09);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#10161b;
+      --grid:rgba(231,237,239,.06);
+      --grid-strong:rgba(231,237,239,.13);
+      --ink:#e9eef0;
+      --ink-dim:#9fb0b8;
+      --paper:#171f26;
+      --paper-border:rgba(231,237,239,.14);
+      --accent:#ff8a50;
+      --accent-strong:#ffa46e;
+      --on-accent:#1c1206;
+      --good:#57c791;
+      --good-bg:rgba(87,199,145,.16);
+      --bad:#ef7086;
+      --bad-bg:rgba(239,112,134,.16);
+      --shadow:0 1px 2px rgba(0,0,0,.35), 0 14px 32px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#10161b;
+    --grid:rgba(231,237,239,.06);
+    --grid-strong:rgba(231,237,239,.13);
+    --ink:#e9eef0;
+    --ink-dim:#9fb0b8;
+    --paper:#171f26;
+    --paper-border:rgba(231,237,239,.14);
+    --accent:#ff8a50;
+    --accent-strong:#ffa46e;
+    --on-accent:#1c1206;
+    --good:#57c791;
+    --good-bg:rgba(87,199,145,.16);
+    --bad:#ef7086;
+    --bad-bg:rgba(239,112,134,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.35), 0 14px 32px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      repeating-linear-gradient(0deg, var(--grid-strong) 0 1px, transparent 1px 96px),
+      repeating-linear-gradient(90deg, var(--grid-strong) 0 1px, transparent 1px 96px),
+      repeating-linear-gradient(0deg, var(--grid) 0 1px, transparent 1px 24px),
+      repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 24px),
+      var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    padding-block:32px;
+  }
+  .page{
+    max-width:640px;
+    margin:0 auto;
+    padding-inline:16px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+
+  .masthead{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .mark{ flex:none; width:40px; height:40px; }
+  .masthead-text{ flex:1 1 200px; min-width:0; }
+  .eyebrow{
+    margin:0 0 2px;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:.7rem;
+    letter-spacing:.11em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+  }
+  h1{
+    margin:0;
+    font-family:"Big Shoulders Display", ui-sans-serif, sans-serif;
+    font-weight:800;
+    font-size:clamp(1.7rem, 5vw, 2.35rem);
+    letter-spacing:.01em;
+    text-wrap:balance;
+    line-height:1;
+  }
+  .score{
+    flex:none;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:1.3rem;
+    font-weight:500;
+    color:var(--ink-dim);
+    background:var(--paper);
+    border:1px solid var(--paper-border);
+    border-radius:6px;
+    padding:6px 12px;
+    box-shadow:var(--shadow);
+  }
+  .score #scoreNum{ color:var(--accent); font-weight:600; }
+  .score-sep{ margin:0 2px; opacity:.5; }
+
+  .trace-panel{
+    background:var(--paper);
+    border:1px solid var(--paper-border);
+    border-radius:10px;
+    padding:14px 16px 10px;
+    box-shadow:var(--shadow);
+  }
+  #traceGraph{ display:block; width:100%; height:auto; }
+  .trace-caption{
+    display:flex;
+    justify-content:space-between;
+    margin-top:4px;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:.68rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+  }
+  #qCounter{ font-variant-numeric:tabular-nums; }
+
+  .quiz-card, .results-card{
+    background:var(--paper);
+    border:1px solid var(--paper-border);
+    border-radius:14px;
+    padding:24px;
+    box-shadow:var(--shadow);
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+
+  .q-label{
+    margin:0;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:.72rem;
+    font-weight:500;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--accent);
+  }
+  .q-prompt{
+    margin:0;
+    font-family:"Big Shoulders Display", ui-sans-serif, sans-serif;
+    font-weight:700;
+    line-height:1.08;
+    text-wrap:balance;
+  }
+  .q-prompt.is-term{ font-size:clamp(1.9rem, 7vw, 2.6rem); }
+  .q-prompt.is-def{
+    font-family:"IBM Plex Sans", ui-sans-serif, sans-serif;
+    font-weight:500;
+    font-size:1.25rem;
+    line-height:1.35;
+  }
+
+  .choices{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+    gap:10px;
+  }
+  .choice{
+    text-align:left;
+    font:inherit;
+    font-size:.98rem;
+    line-height:1.3;
+    color:var(--ink);
+    background:transparent;
+    border:1.5px solid var(--paper-border);
+    border-radius:8px;
+    padding:12px 14px;
+    cursor:pointer;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+  .choice .k{
+    flex:none;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:.75rem;
+    color:var(--ink-dim);
+    border:1px solid var(--paper-border);
+    border-radius:4px;
+    width:20px;
+    height:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:1px;
+  }
+  .choice:hover:not(:disabled){ border-color:var(--accent); }
+  .choice:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .choice:disabled{ cursor:default; }
+  .choice.good{ background:var(--good-bg); border-color:var(--good); color:var(--good); }
+  .choice.good .k{ border-color:var(--good); color:var(--good); }
+  .choice.bad{ background:var(--bad-bg); border-color:var(--bad); color:var(--bad); }
+  .choice.bad .k{ border-color:var(--bad); color:var(--bad); }
+  .choice.dim:disabled{ opacity:.5; }
+
+  .feedback{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    font-size:.92rem;
+    line-height:1.4;
+    padding:12px 14px;
+    border-radius:8px;
+  }
+  .feedback.good{ background:var(--good-bg); color:var(--good); }
+  .feedback.bad{ background:var(--bad-bg); color:var(--bad); }
+  .feedback b{ font-family:"IBM Plex Mono", ui-monospace, monospace; text-transform:uppercase; letter-spacing:.06em; font-size:.72rem; }
+
+  .actions{ display:flex; justify-content:flex-end; }
+  .btn-primary{
+    font:inherit;
+    font-weight:600;
+    font-size:.92rem;
+    color:var(--on-accent);
+    background:var(--accent);
+    border:none;
+    border-radius:8px;
+    padding:11px 20px;
+    cursor:pointer;
+  }
+  .btn-primary:hover{ background:var(--accent-strong); }
+  .btn-primary:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+
+  .results-card{ align-items:stretch; }
+  .results-top{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .results-score{
+    font-family:"Big Shoulders Display", sans-serif;
+    font-weight:800;
+    font-size:clamp(2.6rem, 12vw, 3.6rem);
+    line-height:1;
+    font-variant-numeric:tabular-nums;
+  }
+  .results-score span{ font-size:.4em; color:var(--ink-dim); font-family:"IBM Plex Mono", monospace; font-weight:400; }
+  .results-verdict{ font-family:"IBM Plex Mono", monospace; font-size:.85rem; color:var(--ink-dim); text-align:right; max-width:220px; }
+  .review-title{
+    margin:4px 0 -4px;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.7rem;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+  }
+  .review-list{ display:flex; flex-direction:column; gap:8px; }
+  .review-item{
+    border:1px solid var(--paper-border);
+    border-left:3px solid var(--bad);
+    border-radius:6px;
+    padding:10px 12px;
+    font-size:.9rem;
+    line-height:1.35;
+  }
+  .review-item b{ display:block; font-size:.95rem; margin-bottom:2px; }
+  .review-empty{ font-size:.92rem; color:var(--ink-dim); }
+  .btn-row{ display:flex; justify-content:flex-end; }
+
+  @media (prefers-reduced-motion: no-preference){
+    .choice{ transition:border-color .12s ease, background .12s ease; }
+    .btn-primary{ transition:background .12s ease; }
+    #trace-poly, #trace-dots circle{ transition:all .25s ease; }
+  }
+</style>
+
+<div class="page">
+  <header class="masthead">
+    <svg class="mark" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="9" cy="31" r="2.6" fill="var(--ink-dim)"/>
+      <line x1="9" y1="31" x2="31" y2="9" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M31 9 L24 10.5 M31 9 L29.5 16" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+    </svg>
+    <div class="masthead-text">
+      <p class="eyebrow">Linear Motion · Vocabulary Drill</p>
+      <h1>Kinematics Trace</h1>
+    </div>
+    <div class="score" aria-live="polite"><span id="scoreNum">00</span><span class="score-sep">/</span><span id="scoreTotal">00</span></div>
+  </header>
+
+  <section class="trace-panel">
+    <svg id="traceGraph" viewBox="0 0 600 150" preserveAspectRatio="none" role="img" aria-label="Cumulative correct answers plotted against question number"></svg>
+    <div class="trace-caption">
+      <span>cumulative correct →</span>
+      <span id="qCounter">Q 00 / 00</span>
+    </div>
+  </section>
+
+  <main class="quiz-card" id="quizCard"></main>
+
+  <section class="results-card" id="resultsCard" hidden></section>
+</div>
+
+<script>
+(function(){
+  const TERMS = [
+    ["Displacement","the overall change in position between the starting point and the ending point including direction"],
+    ["Speed","the rate at which an object covers distance, calculated as distance divided by time"],
+    ["Velocity","the rate at which an object changes its position in a specific direction"],
+    ["Acceleration","the rate at which velocity changes over time; an object accelerates if its speed, direction, or both change"],
+    ["Position","the location of an object in relation to the reference point"],
+    ["Reference point","a stationary point that defines the coordinates (i.e. the origin)"],
+    ["Scalar quantity","a physical quantity that has magnitude (with units) only, such as time, mass, temperature, speed"],
+    ["Vector quantity","a physical quantity that has magnitude (with units) and direction, such as force, position, velocity, acceleration"],
+    ["Slope","the steepness of a line on a graph, equal to its vertical change divided by its horizontal change — another word for gradient"],
+    ["Inclined plane","a sloping ramp"],
+    ["Motion sensor","an electronic device that is designed to detect and measure movement"],
+    ["Qualitative observations","descriptive, non-numerical observations, e.g. a fine white powder"],
+    ["Quantitative observations","numerical observations, e.g. 45°C"],
+    ["Position-time graph","a graph showing the change in an object's position against time"],
+    ["Velocity-time graph","a graph showing the change in an object's velocity against time"],
+    ["Uniform","steady, constant, not changing"],
+    ["Physical quantity","a quantity that can be measured, such as time, distance, speed, acceleration"],
+    ["Distance","the total length of the pathway (or path taken) between two points"],
+    ["Stationary","at rest, not moving"],
+    ["Average velocity","the total displacement divided by the time"],
+    ["Average speed","the total distance divided by the time"],
+    ["Vector diagram","vectors are represented by an arrow which depicts the relative magnitude and direction"]
+  ].map(([term,def],id)=>({id,term,def}));
+
+  const TOTAL = TERMS.length;
+  const quizCard = document.getElementById("quizCard");
+  const resultsCard = document.getElementById("resultsCard");
+  const scoreNumEl = document.getElementById("scoreNum");
+  const scoreTotalEl = document.getElementById("scoreTotal");
+  const qCounterEl = document.getElementById("qCounter");
+  const graphEl = document.getElementById("traceGraph");
+  scoreTotalEl.textContent = String(TOTAL).padStart(2,"0");
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+  function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+  let deck, idx, score, history, current, answered, choiceButtons;
+
+  function buildQuestion(item){
+    const asTerm = Math.random() < 0.5;
+    const correct = asTerm ? item.def : cap(item.term);
+    const others = shuffle(TERMS.filter(t => t.id !== item.id)).slice(0,3);
+    const distractors = others.map(t => asTerm ? t.def : cap(t.term));
+    const choices = shuffle([correct, ...distractors]);
+    return {
+      item, asTerm,
+      label: asTerm ? "Identify the definition" : "Identify the term",
+      prompt: asTerm ? cap(item.term) : item.def,
+      choices, correct
+    };
+  }
+
+  function init(){
+    deck = shuffle(TERMS);
+    idx = 0; score = 0; history = [];
+    resultsCard.hidden = true;
+    quizCard.hidden = false;
+    renderQuestion();
+    renderGraph();
+  }
+
+  function renderQuestion(){
+    current = buildQuestion(deck[idx]);
+    answered = false;
+    qCounterEl.textContent = "Q " + String(idx+1).padStart(2,"0") + " / " + String(TOTAL).padStart(2,"0");
+
+    quizCard.innerHTML =
+      '<p class="q-label">' + current.label + '</p>' +
+      '<p class="q-prompt ' + (current.asTerm ? "is-term" : "is-def") + '">' + escapeHtml(current.prompt) + '</p>' +
+      '<div class="choices" id="choicesWrap"></div>' +
+      '<div id="feedbackWrap"></div>' +
+      '<div class="actions" id="actionsWrap"></div>';
+
+    const wrap = document.getElementById("choicesWrap");
+    choiceButtons = current.choices.map((text, i) => {
+      const btn = document.createElement("button");
+      btn.className = "choice";
+      btn.type = "button";
+      btn.innerHTML = '<span class="k">' + (i+1) + '</span><span>' + escapeHtml(text) + '</span>';
+      btn.addEventListener("click", () => selectChoice(btn, text));
+      wrap.appendChild(btn);
+      return btn;
+    });
+  }
+
+  function selectChoice(btn, text){
+    if(answered) return;
+    answered = true;
+    const isCorrect = text === current.correct;
+    if(isCorrect) score++;
+    history.push(isCorrect);
+
+    choiceButtons.forEach(b => {
+      b.disabled = true;
+      const bText = b.textContent.slice(1);
+      if(b === btn){
+        b.classList.add(isCorrect ? "good" : "bad");
+      } else if(bText === current.correct){
+        b.classList.add("good");
+      } else {
+        b.classList.add("dim");
+      }
+    });
+
+    scoreNumEl.textContent = String(score).padStart(2,"0");
+
+    const fb = document.getElementById("feedbackWrap");
+    fb.innerHTML = '<div class="feedback ' + (isCorrect ? "good" : "bad") + '">' +
+      '<b>' + (isCorrect ? "Correct" : "Not quite") + '</b>&nbsp;&mdash;&nbsp;' +
+      escapeHtml(cap(current.item.term)) + ": " + escapeHtml(current.item.def) +
+      '</div>';
+
+    const actions = document.getElementById("actionsWrap");
+    const next = document.createElement("button");
+    next.className = "btn-primary";
+    next.type = "button";
+    next.textContent = (idx === TOTAL - 1) ? "See results" : "Next question";
+    next.addEventListener("click", advance);
+    actions.appendChild(next);
+    next.focus();
+
+    renderGraph();
+  }
+
+  function advance(){
+    idx++;
+    if(idx >= TOTAL){
+      showResults();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  function renderGraph(){
+    const W = 600, H = 150, padL = 34, padR = 12, padT = 10, padB = 22;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const x = i => padL + (i/TOTAL) * plotW;
+    const y = v => padT + plotH - (v/TOTAL) * plotH;
+
+    let svg = "";
+    for(let f=0; f<=4; f++){
+      const yy = padT + (f/4)*plotH;
+      svg += '<line x1="'+padL+'" y1="'+yy+'" x2="'+(W-padR)+'" y2="'+yy+'" stroke="var(--grid-strong)" stroke-width="1"/>';
+    }
+    svg += '<text x="4" y="'+(padT+4)+'" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--ink-dim)">'+TOTAL+'</text>';
+    svg += '<text x="4" y="'+(H-padB+4)+'" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--ink-dim)">0</text>';
+    svg += '<line x1="'+x(0)+'" y1="'+y(0)+'" x2="'+x(TOTAL)+'" y2="'+y(TOTAL)+'" stroke="var(--ink-dim)" stroke-width="1" stroke-dasharray="3 4" opacity=".55"/>';
+
+    let cum = 0;
+    const pts = [[x(0), y(0)]];
+    history.forEach((ok,i) => { if(ok) cum++; pts.push([x(i+1), y(cum)]); });
+    const polyStr = pts.map(p => p[0].toFixed(1)+','+p[1].toFixed(1)).join(" ");
+    svg += '<polyline id="trace-poly" points="'+polyStr+'" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+
+    svg += '<g id="trace-dots">';
+    history.forEach((ok,i) => {
+      const p = pts[i+1];
+      svg += '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="4" fill="'+(ok ? "var(--good)" : "var(--bad)")+'"/>';
+    });
+    svg += '</g>';
+
+    graphEl.innerHTML = svg;
+  }
+
+  function showResults(){
+    quizCard.hidden = true;
+    resultsCard.hidden = false;
+
+    const pct = Math.round((score/TOTAL)*100);
+    let verdict;
+    if(pct === 100) verdict = "Uniform accuracy — zero deceleration.";
+    else if(pct >= 80) verdict = "Strong average velocity through the set.";
+    else if(pct >= 50) verdict = "Non-uniform, but net displacement is positive.";
+    else verdict = "Worth another pass — review the misses below.";
+
+    const misses = deck.filter((item,i) => history[i] === false);
+
+    resultsCard.innerHTML =
+      '<div class="results-top">' +
+        '<div class="results-score">' + score + '<span> / ' + TOTAL + '</span></div>' +
+        '<div class="results-verdict">' + escapeHtml(verdict) + '</div>' +
+      '</div>' +
+      '<p class="review-title">Review</p>' +
+      '<div class="review-list" id="reviewList"></div>' +
+      '<div class="btn-row"><button class="btn-primary" id="restartBtn" type="button">Run again</button></div>';
+
+    const list = document.getElementById("reviewList");
+    if(misses.length === 0){
+      list.innerHTML = '<p class="review-empty">No misses — every term tracked correctly.</p>';
+    } else {
+      misses.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "review-item";
+        div.innerHTML = '<b>' + escapeHtml(cap(item.term)) + '</b>' + escapeHtml(item.def);
+        list.appendChild(div);
+      });
+    }
+    document.getElementById("restartBtn").addEventListener("click", init);
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if(quizCard.hidden) return;
+    if(!answered && ["1","2","3","4"].includes(e.key)){
+      const i = Number(e.key) - 1;
+      if(choiceButtons[i]) choiceButtons[i].click();
+    } else if(answered && (e.key === "Enter" || e.key === " ")){
+      const btn = document.getElementById("actionsWrap") && document.getElementById("actionsWrap").querySelector("button");
+      if(btn) { e.preventDefault(); btn.click(); }
+    }
+  });
+
+  init();
+})();
+</script>
+
+</body></html>
